@@ -36,6 +36,16 @@
   details.proc{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:#fafaf8;}
   details.proc summary{cursor:pointer;padding:10px 14px;font-weight:700;font-size:13px;color:var(--navy);user-select:none;}
   details.proc pre{margin:0;padding:10px 16px 14px;font-family:"Courier New",monospace;font-size:11.5px;line-height:1.85;white-space:pre-wrap;color:#2c3e50;border-top:1px solid var(--line);}
+  /* ── Mobile Tab System ── */
+  .mob-tabs{display:none;}
+  @media(max-width:767px){
+    .mob-tabs{display:flex;background:var(--bg);border-bottom:2px solid var(--line);margin:0 -20px 0;padding:0 20px;}
+    .mob-tab{flex:1;padding:11px 4px;text-align:center;font-size:13.5px;font-weight:700;color:#888;cursor:pointer;background:transparent;border:none;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;}
+    .mob-tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+    .grid{display:block;}
+    .grid>.card{display:none;}
+    .grid>.card.mob-active{display:block;}
+  }
   @media print{
     header,.tabs,.no-print{display:none!important;}
     details.proc{display:block!important;margin-top:16px;border:1px solid #bbb;border-radius:6px;break-inside:avoid;}
@@ -60,8 +70,12 @@
 
 <!-- SHALLOW -->
 <div id="panel-shallow" class="panel active">
+<div class="mob-tabs">
+  <button class="mob-tab active" onclick="switchMobTab('s-input',this)">📋 輸入參數</button>
+  <button class="mob-tab" id="mobTab-s-result" onclick="switchMobTab('s-result',this)">📊 計算結果</button>
+</div>
 <div class="grid">
-  <div class="card">
+  <div class="card mob-active" data-tab="s-input">
     <h2>淺基礎輸入（Terzaghi 一般剪力破壞）</h2>
     <label>基礎形狀</label>
     <select id="s-shape">
@@ -90,7 +104,7 @@
     <button onclick="calcShallow()">計算淺基礎承載力</button>
     <div class="note">公式：qu = c·Nc·sc + γ·Df·Nq·sq + 0.5·γ·B·Nγ·sγ，形狀係數依 Meyerhof 建議。<br>正式設計需由大地工程師依地質調查報告複核。</div>
   </div>
-  <div class="card">
+  <div class="card" data-tab="s-result">
     <h2>淺基礎結果</h2>
     <div id="s-result"><p style="color:#888">尚未計算</p></div>
     <details class="proc" id="s-proc" style="display:none">
@@ -103,8 +117,12 @@
 
 <!-- PILE -->
 <div id="panel-pile" class="panel">
+<div class="mob-tabs">
+  <button class="mob-tab active" onclick="switchMobTab('p-input',this)">📋 輸入參數</button>
+  <button class="mob-tab" id="mobTab-p-result" onclick="switchMobTab('p-result',this)">📊 計算結果</button>
+</div>
 <div class="grid">
-  <div class="card">
+  <div class="card mob-active" data-tab="p-input">
     <h2>樁承載力輸入（靜力 α/β 法）</h2>
     <div class="row2">
       <div><label>樁徑 D (m)</label><input id="p-D" type="number" value="0.6" step="0.05"></div>
@@ -139,7 +157,7 @@
     <button onclick="calcPile()">計算樁承載力</button>
     <div class="note">黏土：α=0.5 Tomlinson；砂土：β 法 (K0·σ'v·tanδ)。正式設計需試樁及大地工程師複核。</div>
   </div>
-  <div class="card">
+  <div class="card" data-tab="p-result">
     <h2>樁基礎結果</h2>
     <div id="p-result"><p style="color:#888">尚未計算</p></div>
     <details class="proc" id="p-proc" style="display:none">
@@ -152,6 +170,25 @@
 
 </main>
 <script>
+// Domain lock
+(function(){
+  var h=location.hostname;
+  var ok= !h || h==='localhost' || h==='127.0.0.1' || h==='yj-chen0830.github.io';
+  if(!ok){
+    document.body.innerHTML='<div style="padding:60px 30px;text-align:center;font-family:sans-serif;color:#333;"><h2 style="color:#0b1f3a;">⚠ 未授權使用</h2><p>本工具版權屬於 <strong>儒鴻結構技師事務所</strong>，<br>僅授權於 <a href="https://yj-chen0830.github.io">yj-chen0830.github.io</a> 使用。</p></div>';
+    throw new Error('Unauthorized domain: '+h);
+  }
+})();
+
+function switchMobTab(name, btn){
+  var panel = btn.closest('.panel') || btn.parentElement.parentElement;
+  btn.parentElement.querySelectorAll('.mob-tab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  panel.querySelectorAll('.grid>.card').forEach(function(c){
+    c.classList.toggle('mob-active', c.dataset.tab===name);
+  });
+}
+
 function switchTab(id){
   ['shallow','pile'].forEach(function(t){
     document.getElementById('tab-'+(t==='shallow'?'s':'p')).classList.toggle('active', t===id);
@@ -272,6 +309,7 @@ function calcShallow(){
 
   document.getElementById('s-proc-text').textContent = proc;
   document.getElementById('s-proc').style.display = '';
+  if(window.innerWidth<768){var b=document.getElementById('mobTab-s-result');if(b)switchMobTab('s-result',b);}
 }
 
 function calcPile(){
@@ -380,6 +418,7 @@ function calcPile(){
 
   document.getElementById('p-proc-text').textContent = proc;
   document.getElementById('p-proc').style.display = '';
+  if(window.innerWidth<768){var b=document.getElementById('mobTab-p-result');if(b)switchMobTab('p-result',b);}
 }
 </script>
 </body>
