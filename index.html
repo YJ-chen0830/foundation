@@ -397,7 +397,8 @@ function calcPile(){
     var tanD  = Math.tan(delta*Math.PI/180);
     Qs = K0*sigv_avg*tanD*peri*L;
     var Qp_unlim = sigv_tip*Nq*Ap;
-    var Qp_cap   = 11*Nq*Ap; // Meyerhof upper limit
+    var Pa = 101.3; // kPa, standard atmospheric pressure
+    var Qp_cap   = 0.5*Pa*Nq*Math.tan(phiR)*Ap; // Meyerhof (1976) limiting point resistance: ql = 0.5*Pa*Nq*tanφ
     Qp = Math.min(Qp_unlim, Qp_cap);
 
     proc = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
@@ -421,9 +422,11 @@ function calcPile(){
       '  Nq = exp(π·tan φ)·tan²(45+φ/2)\n' +
       '     = exp('+((Math.PI*Math.tan(phiR)).toFixed(4))+')×'+Math.pow(Math.tan(Math.PI/4+phiR/2),2).toFixed(4)+'\n' +
       '     = '+Nq.toFixed(2)+'\n\n' +
-      '【六】樁端承力 Qp（上限 Meyerhof: 11·Nq·Ap）\n' +
+      '【六】樁端承力 Qp（上限 Meyerhof 1976: ql=0.5·Pa·Nq·tanφ）\n' +
       '  Qp_unlim = σ\'v_tip·Nq·Ap = '+sigv_tip.toFixed(2)+'×'+Nq.toFixed(2)+'×'+Ap.toFixed(4)+' = '+Qp_unlim.toFixed(2)+' kN\n' +
-      '  Qp_cap   = 11·Nq·Ap      = 11×'+Nq.toFixed(2)+'×'+Ap.toFixed(4)+' = '+Qp_cap.toFixed(2)+' kN\n' +
+      '  Qp_cap   = 0.5·Pa·Nq·tanφ·Ap（Pa=101.3 kPa大氣壓）\n' +
+      '           = 0.5×101.3×'+Nq.toFixed(2)+'×'+Math.tan(phiR).toFixed(4)+'×'+Ap.toFixed(4)+'\n'+
+      '           = '+Qp_cap.toFixed(2)+' kN\n' +
       '  Qp = min('+Qp_unlim.toFixed(2)+', '+Qp_cap.toFixed(2)+') = '+Qp.toFixed(2)+' kN\n';
   }
 
